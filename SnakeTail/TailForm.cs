@@ -98,7 +98,7 @@ namespace SnakeTail
         bool _displayTabIcon = false;
         List<ExternalToolConfig> _externalTools;
         Color _bookmarkTextColor = Color.Yellow;    // Default bookmark text color
-        Color _bookmarkBackColor = Color.DarkGreen; // Default bookmark background color
+        Color _bookmarkBackColor = Color.Green;     // Default bookmark background color
         List<int> _bookmarks = new List<int>();
         ThreadPoolQueue _threadPoolQueue = null;
 
@@ -1692,6 +1692,11 @@ namespace SnakeTail
 
         private void copyAsPathToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            CopyPath();
+        }
+
+        public void CopyPath()
+        {
             string actualFileName = string.Empty;
             if (_logTailStream != null)
             {
@@ -1710,6 +1715,11 @@ namespace SnakeTail
         }
 
         private void openContainingFolderToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenExplorer();
+        }
+
+        public void OpenExplorer()
         {
             try
             {

@@ -351,19 +351,22 @@ namespace SnakeTail
 
         private void _MDITabControl_MouseClick(object sender, MouseEventArgs e)
         {
+            var tabControl = sender as TabControl;
+            TabPage tabPageCurrent = GetTabPageFromLocation(tabControl, e.Location);
+
             if (e.Button == MouseButtons.Middle)
             {
-                var tabControl = sender as TabControl;
-                TabPage tabPageCurrent = null;
-                for (var i = 0; i < tabControl.TabCount; i++)
-                {
-                    if (!tabControl.GetTabRect(i).Contains(e.Location))
-                        continue;
-                    tabPageCurrent = tabControl.TabPages[i];
-                    break;
-                }
                 if (tabPageCurrent != null)
                     (tabPageCurrent.Tag as Form).Close();
+            }
+            else if (e.Button == MouseButtons.Right)
+            {
+                var enablePath = tabPageCurrent.Tag is TailForm;
+                _openFolderTabContext.Visible = enablePath;
+                _copyPathTabContext.Visible = enablePath;
+                _separatorTabContext.Visible = enablePath;
+
+                _tabContextMenuStrip.Show(sender as TabControl, e.Location);
             }
         }
 
@@ -907,6 +910,69 @@ namespace SnakeTail
             if (ActiveMdiChild != null)
             {
                 ActiveMdiChild.Close();
+            }
+        }
+
+        private TForm GetSelectedTabForm<TForm>(object sender) where TForm : Form
+        {
+            ToolStripItem item = (sender as ToolStripItem);
+            if (item != null)
+            {
+                ContextMenuStrip owner = item.Owner as ContextMenuStrip;
+                if (owner != null)
+                {
+                    var sourceControl = owner.SourceControl;
+                    var tabControl = sourceControl as TabControl;
+                    if (tabControl != null)
+                    {
+                        var relativeToScreen = tabControl.PointToClient(owner.Bounds.Location);
+                        var tabPageCurrent = GetTabPageFromLocation(tabControl, relativeToScreen);
+                        if (tabPageCurrent != null)
+                        {
+                            return tabPageCurrent.Tag as TForm;
+                        }                                
+                    }
+                }
+            }
+            return null;
+        }
+
+        private TabPage GetTabPageFromLocation(TabControl tabControl, Point point)
+        {
+            TabPage tabPageCurrent = null;
+            for (var i = 0; i < tabControl.TabCount; i++)
+            {
+                if (!tabControl.GetTabRect(i).Contains(point))
+                    continue;
+                return tabControl.TabPages[i];
+            }
+            return null;
+        }
+
+        private void _copyFolderPathClick(object sender, EventArgs e)
+        {
+            TailForm tailForm = GetSelectedTabForm<TailForm>(sender);
+            if (tailForm != null)
+            {
+                tailForm.CopyPath();
+            }
+        }
+
+        private void _closeContextClick(object sender, EventArgs e)
+        {
+            Form form = GetSelectedTabForm<Form>(sender);
+            if (form != null)
+            {
+                form.Close();
+            }
+        }
+
+        private void _openContainingFolderClick(object sender, EventArgs e)
+        {
+            TailForm tailForm = GetSelectedTabForm<TailForm>(sender);
+            if (tailForm != null)
+            {
+                tailForm.OpenExplorer();
             }
         }
     }
